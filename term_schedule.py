@@ -13,25 +13,14 @@ import textwrap
 # ==============================
 
 # Input lesson file
-LESSON_FILE = "lessons.txt"
+LESSON_FILE = r"C:\Users\SticksandStones\OneDrive\Documents\CS\Term Schedule\lessons.txt"
 
 # Output file
 OUTPUT_FILE = "TeachingSchedule.csv"
 OUTPUT_FILE_IMAGE = "TeachingSchedule.jpg"
 
 # Holiday file
-HOLIDAY_FILE = "Holidays.txt"
-
-other_dates = {}
-with open(HOLIDAY_FILE, 'r', encoding="utf-8") as f:
-    text = f.read()
-    tmp_text = text.split(r'\n')
-    for i in text.split("\n"):
-        tmp = i.split(" : ")
-        tmp2 = tmp[0].split('-')
-
-        tmp_date = datetime.strptime(tmp[0], "%Y-%m-%d")
-        other_dates[tmp_date.date()] = tmp[1]
+HOLIDAY_FILE = r"C:\Users\SticksandStones\OneDrive\Documents\CS\Term Schedule\Holidays.txt"
 
 # Country for holidays
 COUNTRY = "CA"          # Canada
@@ -57,9 +46,21 @@ settings = {
     "gap" : 50,
     "round" : 20,
     "rect_x" : 800,
-    "rect_y" : 600,
+    "rect_y" : 500,
+    "stat_holiday_colour" : STAT_HOLIDAY_COLOUR,
+    "school_holiday_colour" : SCHOOL_HOLIDAY_COLOUR,
+    "default_day_colour" : DEFAULT_INSTR_DAY_COLOUR,
 }
 
+def load_misc_days(text):
+    other_dates = {}
+    for i in text.strip().split("\n"):
+        tmp = i.split(" : ")
+
+        tmp_date = datetime.strptime(tmp[0], r"%Y-%m-%d")
+        
+        other_dates[tmp_date.date()] = tmp[1]
+    return other_dates
 # ==============================
 # function for parsing text lines from lessons, regex is a nightmare and i will never use regex ever again
 def groupings(text):
@@ -93,44 +94,43 @@ def groupings(text):
     return out
 
 
-def load_lessons(filename):
+def load_lessons(text, settings):
     lessons = []
 
-    with open(filename, "r", encoding="utf-8") as f:
-        for line in f:
+    for line in text.splitlines():
 
-            title = None
-            duration = 1
-            colour = DEFAULT_INSTR_DAY_COLOUR
+        title = None
+        duration = 1
+        colour = settings['default_day_colour']
 
-            line = line.strip()
+        line = line.strip()
 
-            if not line:
-                continue
+        if not line:
+            continue
+        
+        items = groupings(line)
+
+        for i in items:
+            if "[" and "]" not in i:
+                title = i.strip()
             
-            items = groupings(line)
+            elif i[1:-1].isnumeric():
+                duration = int(i[1:-1])
+            
+            elif len(i[1:-1]) > 5 or "#" in i[1:-1]:
 
-            for i in items:
-                if "[" and "]" not in i:
-                    title = i.strip()
-                
-                elif i[1:-1].isnumeric():
-                    duration = int(i[1:-1])
-                
-                elif len(i[1:-1]) > 5 or "#" in i[1:-1]:
+                colour = "#" + i[1:-1].strip("#").upper()
 
-                    colour = "#" + i[1:-1].strip("#").upper()
-
-            lessons.append({
-                "title": title,
-                "duration": duration,
-                "colour" : colour
-            })
+        lessons.append({
+            "title": title,
+            "duration": duration,
+            "colour" : colour
+        })
 
     return lessons
 
 
-def create_schedule(lessons):
+def create_schedule(lessons, misc_dates, settings):
 
     start = datetime.strptime(START_DATE, "%Y-%m-%d").date()
 
@@ -171,18 +171,18 @@ def create_schedule(lessons):
                     "Lesson": ca_holidays[current_date],
                     "Day": "",
                     "Notes": "",
-                    "Colour": STAT_HOLIDAY_COLOUR
+                    "Colour": settings["stat_holiday_colour"]
                 })
             
-            elif current_date in other_dates:
+            elif current_date in misc_dates:
 
                     schedule.append({
                     "Date": current_date,
                     "Lesson #": "",
-                    "Lesson": other_dates[current_date],
+                    "Lesson": misc_dates[current_date],
                     "Day": "",
                     "Notes": "",
-                    "Colour": SCHOOL_HOLIDAY_COLOUR
+                    "Colour": settings['school_holiday_colour']
                 })
             else:
 
@@ -261,15 +261,20 @@ def gen_calendar(df, fig=None, ax=None, config_settings=settings):
     ax.invert_yaxis()
 
     plt.title("Schedule", fontweight="bold")
+    plt.tight_layout()
     plt.show()
 
     return fig, ax
 
 if __name__ == "__main__":
+    with open(LESSON_FILE, "r", encoding="utf-8") as f:
 
-    lessons = load_lessons(LESSON_FILE)
+        lessons = load_lessons(f.read())
 
-    df = create_schedule(lessons)
+    with open(HOLIDAY_FILE, "r", encoding="utf-8") as f:
+        pd_days = load_misc_days(f.read())
+
+    df = create_schedule(lessons, pd_days, settings)
 
     fig, ax = gen_calendar(df)
 

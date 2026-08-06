@@ -2,7 +2,8 @@ Introduction
 Diagnostic Quiz [#aa6767]
 Polynomials [5]
 Exponentials [2]
-Polynomial Quiz + Introduction to Factoring [3]
+Polynomial Quiz + Introduction to Factoring [1]
+Factoring [2]
 Factoring by Grouping
 Factoring by axc +b [3]
 Test
