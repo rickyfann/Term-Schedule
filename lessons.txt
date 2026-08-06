@@ -1,11 +1,8 @@
-Introduction [aa0000]
-Safety Procedures
-Lab Equipment
-Scientific Method
-Measurement
-Density [2]
-Graphing Data
-States of Matter
-Particle Theory
-Review
-Quiz
+Introduction 
+Diagnostic Quiz [#aa6767]
+Polynomials [5]
+Exponentials [2]
+Polynomial Quiz + Introduction to Factoring [3]
+Factoring by Grouping
+Factoring by axc +b [3]
+Test

@@ -6,6 +6,7 @@ import re
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 import numpy as np
+import textwrap
 
 # ==============================
 # USER SETTINGS
@@ -16,6 +17,7 @@ LESSON_FILE = "lessons.txt"
 
 # Output file
 OUTPUT_FILE = "TeachingSchedule.csv"
+OUTPUT_FILE_IMAGE = "TeachingSchedule.jpg"
 
 # Holiday file
 HOLIDAY_FILE = "Holidays.txt"
@@ -47,13 +49,15 @@ TEACHING_DAYS = [0,1,2,3,4]     # Monday-Friday
 STAT_HOLIDAY_COLOUR = "#D3C7E6"
 SCHOOL_HOLIDAY_COLOUR = "#F1B598"
 DEFAULT_INSTR_DAY_COLOUR = "#BEDAE3"
+# plt.rcParams['font.family'] = 'Handwriting'
+# plt.rc('font', size=16)
 
 settings = {
     "weekends" : False,
     "gap" : 50,
     "round" : 20,
-    "rect_x" : 400,
-    "rect_y" : 350,
+    "rect_x" : 800,
+    "rect_y" : 600,
 }
 
 # ==============================
@@ -230,14 +234,12 @@ def gen_calendar(df, fig=None, ax=None, config_settings=settings):
     day_week_index = [(i, r) for r in range(weeks) for i in range(5)][start_day_of_week:school_days]
 
     for ind, (i, row) in zip(day_week_index, df.iterrows()):
-        print(ind)
         x = np.floor((config_settings["rect_x"] + config_settings["gap"]) * ind[0] + (config_settings["rect_x"]) * 0.5)
         y = np.floor((config_settings["rect_y"] + config_settings["gap"]) * (ind[1]) + (config_settings["rect_y"]) * 0.5)
-        print(x,y)
         rect = FancyBboxPatch(
                 (x, y),      # (x, y) bottom-left corner
                 config_settings["rect_x"],              # width
-                config_settings["rect_y"],              # height
+                config_settings["rect_y"],           # height
                 boxstyle=fr"round, pad=-0.05, rounding_size={config_settings["round"]}",
                 edgecolor="black",
                 facecolor=fr"{row.Colour}",
@@ -245,7 +247,12 @@ def gen_calendar(df, fig=None, ax=None, config_settings=settings):
             )
 
         ax.add_patch(rect)
-        ax.text(x + 10, y + 4 + 50, f"{row.Date.day}")
+        ax.text(x + config_settings["gap"] * .5, y + config_settings["gap"]*2, f"{row.Date.day}", fontweight="bold")
+        ax.text(x + config_settings["rect_x"]//2, 
+                y + + config_settings["rect_y"]//2 + config_settings["gap"], 
+                s=f"{textwrap.fill(row.Lesson,13)}",
+                ha="center",
+                va="center",)
 
     ax.set_xlim(xmax=(days + 1) * (config_settings["rect_x"] + config_settings["gap"]) - config_settings["gap"])
     ax.set_ylim(ymax=(weeks + 1) * (config_settings["rect_y"] + config_settings["gap"]))
@@ -253,7 +260,7 @@ def gen_calendar(df, fig=None, ax=None, config_settings=settings):
     ax.axis("off")
     ax.invert_yaxis()
 
-    plt.title("Schedule")
+    plt.title("Schedule", fontweight="bold")
     plt.show()
 
     return fig, ax
@@ -264,9 +271,13 @@ if __name__ == "__main__":
 
     df = create_schedule(lessons)
 
-    gen_calendar(df)
+    fig, ax = gen_calendar(df)
 
     df.to_csv(OUTPUT_FILE, index=False)
 
     print(df)
     print(f"\nSaved to {OUTPUT_FILE}")
+
+    fig.savefig(OUTPUT_FILE_IMAGE)
+
+    print(f"\nSaved to {OUTPUT_FILE_IMAGE}")
