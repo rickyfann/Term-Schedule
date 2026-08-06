@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import holidays
-import re
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
@@ -219,7 +218,7 @@ def create_schedule(lessons, misc_dates, settings):
 def gen_calendar(df, fig=None, ax=None, config_settings=settings):
 
     if fig is None or ax is None:
-        fig, ax  = plt.subplots(figsize=[10,7], dpi=300)
+        fig, ax  = plt.subplots(figsize=[10,7], dpi=500)
 
     plt.sca(ax)
 
