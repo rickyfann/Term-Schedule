@@ -36,7 +36,6 @@ sample_holidays = r"""2026-10-12 : PD Day 1
 """
 
 webpage_text = rf"""
-# Term Planner
 ## What is this?
 This is a tool that will automatically generate a calendar based on your inputted lessons, days required for each lesson, and will account for holidays / flex days based on the current calendar year.
 ## How to use
@@ -77,14 +76,12 @@ with side:
     round_size = st.number_input("Round size",      key="7", value=20)
     rect_x_size = st.number_input("Cell x-size",    key="8", value=1000,)
     rect_y_size = st.number_input("Cell y-size",    key="9", value=rect_x_size//2)
+    cell_border_size = st.number_input("Cell border size", key="10", value=2)
+    figure_border_size = st.number_input("Border Size",    key="11", value=3)
+    dark_mode_check = st.checkbox("Darkmode",       key="12", value=False)
 
     if reset_button:
-        del st.session_state["1"]
-        del st.session_state["2"]
-        del st.session_state["3"]
-        st.session_state["1"] = "#FFB6A6"
-        st.session_state["2"] = "#FFEBD3"
-        st.session_state["3"] = "#9BCEC1"
+        st.session_state.clear()
         st.rerun()
 
 settings = {
@@ -93,16 +90,21 @@ settings = {
     "round" : round_size,
     "rect_x" : rect_x_size,
     "rect_y" : rect_y_size,
+    "cell_border" : cell_border_size,
     "stat_holiday_colour" : STAT_HOLIDAY_COLOUR.capitalize(),
     "school_holiday_colour" : SCHOOL_HOLIDAY_COLOUR.capitalize(),
     "default_day_colour" : DEFAULT_INSTR_DAY_COLOUR.capitalize(),
     "default_quiz_colour" : DEFAULT_QUIZ_COLOUR.capitalize(),
     "default_test_colour" : DEFAULT_TEST_COLOUR.capitalize(),
+    "figure_border_size" : figure_border_size,
+    "dark_mode" : dark_mode_check,
 }
 
 import matplotlib.pyplot as plt
 plt.rc('font', size=10)
 plt.rc('axes', titlesize=20)
+
+st.markdown("# Term Planner", text_alignment="center")
 
 left_column, mid_column, right_column  = st.columns(3, gap="medium")
 
@@ -113,7 +115,7 @@ with left_column:
 # sidebar content
 
 with mid_column:
-
+    st.markdown("## Inputs")
 # main content - columns
     col1, col2 = st.columns(2)
 
@@ -151,5 +153,6 @@ if not loaded_lessons or not misc_days:
 
 else:
     with right_column:
+        st.markdown("## Output")
         main()
 

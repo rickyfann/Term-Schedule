@@ -49,11 +49,14 @@ default_settings = {
     "round" : 20,
     "rect_x" : 800,
     "rect_y" : 500,
+    "cell_border" : 2,
     "stat_holiday_colour" : STAT_HOLIDAY_COLOUR,
     "school_holiday_colour" : SCHOOL_HOLIDAY_COLOUR,
     "default_day_colour" : DEFAULT_INSTR_DAY_COLOUR,
     "default_quiz_colour" : DEFAULT_QUIZ_COLOUR,
     "default_test_colour" : DEFAULT_TEST_COLOUR,
+    "figure_border_size" : 2,
+    "dark_mode" : True,
 }
 
 def load_misc_days(text):
@@ -230,6 +233,16 @@ def create_schedule(lessons, misc_dates, settings, start_date="2026-09-07"):
 
 def gen_calendar(df, fig=None, ax=None, config_settings=default_settings):
 
+    if config_settings["dark_mode"]:
+        text_colour = "white"
+        edge_colour = "white"
+        plot_colour = "grey"
+
+    else:
+        text_colour = "black"
+        edge_colour = "black"
+        plot_colour = "w"
+
     days = 7 if config_settings["weekends"] else 5
     school_days = len(df["Date"])
 
@@ -246,8 +259,12 @@ def gen_calendar(df, fig=None, ax=None, config_settings=default_settings):
 
     if fig is None or ax is None:
         # fig, ax  = plt.subplots(figsize=[10,10], dpi=target_dpi)
-        fig, ax  = plt.subplots(figsize=[width_px // target_dpi, height_px // target_dpi], dpi=target_dpi)
-
+        fig, ax  = plt.subplots(figsize=[width_px // target_dpi, height_px // target_dpi], 
+                                dpi=target_dpi,
+                                edgecolor=edge_colour,
+                                linewidth=config_settings["figure_border_size"],
+                                )
+    fig.patch.set_facecolor(plot_colour)
     plt.sca(ax)
 
     for ind, (i, row) in zip(day_week_index, df.iterrows()):
@@ -260,7 +277,7 @@ def gen_calendar(df, fig=None, ax=None, config_settings=default_settings):
                 boxstyle=fr"round, pad=-0.05, rounding_size={config_settings["round"]}",
                 edgecolor="black",
                 facecolor=fr"{row.Colour}",
-                linewidth=2
+                linewidth=config_settings["cell_border"]
             )
 
         ax.add_patch(rect)
@@ -268,21 +285,25 @@ def gen_calendar(df, fig=None, ax=None, config_settings=default_settings):
                 y + config_settings["gap"]*2,
                 f"{row.Date.day}",
                 fontweight="bold",
-                fontsize=10)
+                fontsize=10,
+                color=text_colour)
         ax.text(x + config_settings["rect_x"]//2, 
                 y + config_settings["rect_y"]//2 + config_settings["gap"], 
                 s=f"{textwrap.fill(row.Lesson,12)}",
                 ha="center",
                 va="center",
-                fontsize=10)
+                fontsize=10,
+                color=text_colour
+                )
 
     ax.set_xlim(xmax=(days + 1) * (config_settings["rect_x"] + config_settings["gap"]) - config_settings["gap"])
     ax.set_ylim(ymax=(weeks + 1) * (config_settings["rect_y"] + config_settings["gap"]))
     ax.set_aspect("equal")
     ax.axis("off")
+    ax.set_facecolor("salmon")
     ax.invert_yaxis()
 
-    plt.title("Schedule", fontweight="bold")
+    plt.title("Schedule", fontweight="bold", color=text_colour)
     plt.tight_layout()
     plt.show()
 
