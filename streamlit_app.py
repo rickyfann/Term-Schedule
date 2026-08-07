@@ -30,7 +30,7 @@ webpage_text = rf"""
 ## What is this?
 This is a tool that will automatically generate a calendar based on your inputted lessons, days required for each lesson, and will account for holidays / flex days based on the current calendar year.
 ## How to use
-You will need two information groups. Your lesson titles, and school-board specific holidays
+You will need two pieces of information. Your lesson titles, and school-board specific holidays
 
 Simply provide a text form of your lesson plans in order, similar to the following.
 ```
@@ -57,6 +57,11 @@ with side:
     SCHOOL_HOLIDAY_COLOUR = st.color_picker("Select the colour for school holidays", key = "2", value="#F1B598")
     DEFAULT_INSTR_DAY_COLOUR = st.color_picker("Select the colour for default instructional days", key = "3", value="#BEDAE3")
 
+    gap_size = st.number_input("Gap size", value=50)
+    round_size = st.number_input("Round size", value=20)
+    rect_x_size = st.number_input("Cell x-size", value=1000,)
+    rect_y_size = st.number_input("Cell y-size", value=rect_x_size//2)
+
     if reset_button:
         del st.session_state["1"]
         del st.session_state["2"]
@@ -68,10 +73,10 @@ with side:
 
 settings = {
     "weekends" : False,
-    "gap" : 50,
-    "round" : 20,
-    "rect_x" : 1000,
-    "rect_y" : 600,
+    "gap" : gap_size,
+    "round" : round_size,
+    "rect_x" : rect_x_size,
+    "rect_y" : rect_y_size,
     "stat_holiday_colour" : STAT_HOLIDAY_COLOUR.capitalize(),
     "school_holiday_colour" : SCHOOL_HOLIDAY_COLOUR.capitalize(),
     "default_day_colour" : DEFAULT_INSTR_DAY_COLOUR.capitalize(),
@@ -119,6 +124,10 @@ def main():
     fig, ax = gen_calendar(df, config_settings=settings)
 
     st.pyplot(fig,use_container_width=False)
+
+    fig_x_size, fig_y_size = fig.get_size_inches()
+
+    st.write(f"{fig_x_size}, {fig_y_size}")
 
 
 if not loaded_lessons or not misc_days:
