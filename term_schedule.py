@@ -37,13 +37,13 @@ TEACHING_DAYS = [0,1,2,3,4]     # Monday-Friday
 STAT_HOLIDAY_COLOUR = "#D3C7E6"
 SCHOOL_HOLIDAY_COLOUR = "#F1B598"
 DEFAULT_INSTR_DAY_COLOUR = "#BEDAE3"
-DEFAULT_TEST_COLOUR = "#AA0000"
 DEFAULT_QUIZ_COLOUR = "#7A26AE"
+DEFAULT_TEST_COLOUR = "#AA0000"
     
 # plt.rcParams['font.family'] = 'Handwriting'
 # plt.rc('font', size=16)
 
-settings = {
+default_settings = {
     "weekends" : False,
     "gap" : 50,
     "round" : 20,
@@ -228,7 +228,7 @@ def create_schedule(lessons, misc_dates, settings, start_date="2026-09-07"):
     return pd.DataFrame(schedule)
 
 
-def gen_calendar(df, fig=None, ax=None, config_settings=settings):
+def gen_calendar(df, fig=None, ax=None, config_settings=default_settings):
 
     days = 7 if config_settings["weekends"] else 5
     school_days = len(df["Date"])
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     with open(HOLIDAY_FILE, "r", encoding="utf-8") as f:
         pd_days = load_misc_days(f.read())
 
-    df = create_schedule(lessons, pd_days, settings)
+    df = create_schedule(lessons, pd_days, default_settings)
 
     fig, ax = gen_calendar(df)
 
