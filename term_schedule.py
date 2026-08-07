@@ -26,7 +26,7 @@ COUNTRY = "CA"          # Canada
 PROVINCE = "ON"         # Ontario
 
 # Schedule
-START_DATE = "2026-09-07"
+START_DATE = datetime.today()
 END_DATE = None         # Example: "2027-01-30" or None
 
 # Teaching weekdays
@@ -53,19 +53,21 @@ settings = {
 
 def load_misc_days(text):
     other_dates = {}
-    for i in text.strip().split("\n"):
-        tmp = i.split(" : ")
+    try:
+        for i in text.strip().split("\n"):
+            tmp = i.split(" : ")
 
-        tmp_date = datetime.strptime(tmp[0], r"%Y-%m-%d")
-        
-        other_dates[tmp_date.date()] = tmp[1]
+            tmp_date = datetime.strptime(tmp[0], r"%Y-%m-%d")
+            
+            other_dates[tmp_date.date()] = tmp[1]
+    except:
+        return other_dates
     return other_dates
 # ==============================
 # function for parsing text lines from lessons, regex is a nightmare and i will never use regex ever again
 def groupings(text):
 
     out = []
-
     start, end = 0, 0
 
     if "[" and "]" in text:
@@ -114,7 +116,7 @@ def load_lessons(text, settings):
                 title = i.strip()
             
             elif i[1:-1].isnumeric():
-                duration = int(i[1:-1])
+                duration = int(i[1:-1]) if int(i[1:-1]) > 1 else 1
             
             elif len(i[1:-1]) > 5 or "#" in i[1:-1]:
 
@@ -129,9 +131,9 @@ def load_lessons(text, settings):
     return lessons
 
 
-def create_schedule(lessons, misc_dates, settings):
+def create_schedule(lessons, misc_dates, settings, start_date="2026-09-07"):
 
-    start = datetime.strptime(START_DATE, "%Y-%m-%d").date()
+    start = datetime.strptime(start_date, "%Y-%m-%d").date()
 
     if END_DATE:
         end = datetime.strptime(END_DATE, "%Y-%m-%d").date()
@@ -217,11 +219,6 @@ def create_schedule(lessons, misc_dates, settings):
 
 def gen_calendar(df, fig=None, ax=None, config_settings=settings):
 
-    if fig is None or ax is None:
-        fig, ax  = plt.subplots(figsize=[10,7], dpi=500)
-
-    plt.sca(ax)
-
     days = 7 if config_settings["weekends"] else 5
     school_days = len(df["Date"])
 
@@ -232,13 +229,23 @@ def gen_calendar(df, fig=None, ax=None, config_settings=settings):
 
     day_week_index = [(i, r) for r in range(weeks) for i in range(5)][start_day_of_week:school_days]
 
+    target_dpi = 500
+    width_px = int(days * (config_settings["rect_x"] + 1))
+    height_px = int(weeks * (config_settings["rect_y"] + 1))
+
+    if fig is None or ax is None:
+        # fig, ax  = plt.subplots(figsize=[10,10], dpi=target_dpi)
+        fig, ax  = plt.subplots(figsize=[width_px // target_dpi, height_px // target_dpi], dpi=target_dpi)
+
+    plt.sca(ax)
+
     for ind, (i, row) in zip(day_week_index, df.iterrows()):
         x = np.floor((config_settings["rect_x"] + config_settings["gap"]) * ind[0] + (config_settings["rect_x"]) * 0.5)
         y = np.floor((config_settings["rect_y"] + config_settings["gap"]) * (ind[1]) + (config_settings["rect_y"]) * 0.5)
         rect = FancyBboxPatch(
                 (x, y),      # (x, y) bottom-left corner
                 config_settings["rect_x"],              # width
-                config_settings["rect_y"],           # height
+                config_settings["rect_y"],              # height
                 boxstyle=fr"round, pad=-0.05, rounding_size={config_settings["round"]}",
                 edgecolor="black",
                 facecolor=fr"{row.Colour}",
@@ -246,12 +253,17 @@ def gen_calendar(df, fig=None, ax=None, config_settings=settings):
             )
 
         ax.add_patch(rect)
-        ax.text(x + config_settings["gap"] * .5, y + config_settings["gap"]*2, f"{row.Date.day}", fontweight="bold")
+        ax.text(x + config_settings["gap"] * .5,
+                y + config_settings["gap"]*2,
+                f"{row.Date.day}",
+                fontweight="bold",
+                fontsize=10)
         ax.text(x + config_settings["rect_x"]//2, 
-                y + + config_settings["rect_y"]//2 + config_settings["gap"], 
-                s=f"{textwrap.fill(row.Lesson,13)}",
+                y + config_settings["rect_y"]//2 + config_settings["gap"], 
+                s=f"{textwrap.fill(row.Lesson,12)}",
                 ha="center",
-                va="center",)
+                va="center",
+                fontsize=10)
 
     ax.set_xlim(xmax=(days + 1) * (config_settings["rect_x"] + config_settings["gap"]) - config_settings["gap"])
     ax.set_ylim(ymax=(weeks + 1) * (config_settings["rect_y"] + config_settings["gap"]))
