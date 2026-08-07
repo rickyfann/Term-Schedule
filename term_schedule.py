@@ -321,11 +321,4 @@ if __name__ == "__main__":
 
     fig, ax = gen_calendar(df)
 
-    df.to_csv(OUTPUT_FILE, index=False)
-
     print(df)
-    print(f"\nSaved to {OUTPUT_FILE}")
-
-    fig.savefig(OUTPUT_FILE_IMAGE)
-
-    print(f"\nSaved to {OUTPUT_FILE_IMAGE}")
