@@ -37,6 +37,9 @@ TEACHING_DAYS = [0,1,2,3,4]     # Monday-Friday
 STAT_HOLIDAY_COLOUR = "#D3C7E6"
 SCHOOL_HOLIDAY_COLOUR = "#F1B598"
 DEFAULT_INSTR_DAY_COLOUR = "#BEDAE3"
+DEFAULT_TEST_COLOUR = "#AA0000"
+DEFAULT_QUIZ_COLOUR = "#7A26AE"
+    
 # plt.rcParams['font.family'] = 'Handwriting'
 # plt.rc('font', size=16)
 
@@ -49,6 +52,8 @@ settings = {
     "stat_holiday_colour" : STAT_HOLIDAY_COLOUR,
     "school_holiday_colour" : SCHOOL_HOLIDAY_COLOUR,
     "default_day_colour" : DEFAULT_INSTR_DAY_COLOUR,
+    "default_quiz_colour" : DEFAULT_QUIZ_COLOUR,
+    "default_test_colour" : DEFAULT_TEST_COLOUR,
 }
 
 def load_misc_days(text):
@@ -109,18 +114,24 @@ def load_lessons(text, settings):
         if not line:
             continue
         
-        items = groupings(line)
+        items = [line.split("[")[0]] + [x.split("]", 1)[0]
+                                        for x in line.split("[")[1:]]
 
-        for i in items:
-            if "[" and "]" not in i:
+        for index_num, i in enumerate(items):
+            if index_num==0:
                 title = i.strip()
             
-            elif i[1:-1].isnumeric():
-                duration = int(i[1:-1]) if int(i[1:-1]) > 1 else 1
+            elif i.isnumeric():
+                duration = int(i) if int(i) > 1 else 1
             
-            elif len(i[1:-1]) > 5 or "#" in i[1:-1]:
+            elif len(i) > 5 or "#" in i:
+                colour = "#" + i.strip("#").upper()
 
-                colour = "#" + i[1:-1].strip("#").upper()
+            elif i.capitalize() == "Q":
+                colour = settings["default_quiz_colour"]
+
+            elif i.capitalize() == "T":
+                colour = settings["default_test_colour"]
 
         lessons.append({
             "title": title,

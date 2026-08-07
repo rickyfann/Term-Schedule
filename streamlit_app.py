@@ -15,15 +15,33 @@ sample_lessons = r"""Introduction
 Diagnostic Quiz [#aa6767]
 Polynomials [3]
 Exponentials [2]
-Polynomial Quiz + Introduction to Factoring [1]
+Polynomial Quiz [q]
+Modeling Linear Equations
+Solving Linear Systems
+Linear Word Problems
+Review
+Linear Systems Test [t]
+Introduction to Quadratics
 Factoring by Grouping [2]
 Factoring by axc + b [2]
-Test
+Vertex Form
+Quiz [q]
+Factoring Word Problems [3]
+Quadratics Test [t]
+Introduction to Trigonometry
 """
 
-sample_holidays = r"""2026-09-10 : PD Day 1
-2026-09-14 : PD Day 2
-2026-09-16 : PD Day 3"""
+sample_holidays = r"""2026-10-12 : PD Day 1
+2026-12-21 : Christmas Break
+2026-12-22 : Christmas Break
+2026-12-23 : Christmas Break
+2026-12-24 : Christmas Break
+2026-12-28 : Christmas Break
+2026-12-29 : Christmas Break
+2026-12-30 : Christmas Break
+2026-12-31 : Christmas Break
+2027-01-01 : Christmas Break
+"""
 
 webpage_text = rf"""
 # Term Planner
@@ -53,22 +71,30 @@ side = st.sidebar
 with side:
     st.markdown("# Advanced Settings")
     reset_button = st.button("Reset Settings")
-    STAT_HOLIDAY_COLOUR = st.color_picker("Select the colour for statutory holidays", key = "1", value="#D3C7E6")
-    SCHOOL_HOLIDAY_COLOUR = st.color_picker("Select the colour for school holidays", key = "2", value="#F1B598")
-    DEFAULT_INSTR_DAY_COLOUR = st.color_picker("Select the colour for default instructional days", key = "3", value="#BEDAE3")
+    STAT_HOLIDAY_COLOUR = st.color_picker("Select the colour for statutory holidays", 
+                                                key="1", value="#FFB6A6")
+    SCHOOL_HOLIDAY_COLOUR = st.color_picker("Select the colour for school holidays", 
+                                                key="2", value="#FFEBD3")
+    DEFAULT_INSTR_DAY_COLOUR = st.color_picker("Select the colour for default instructional days", 
+                                                key="3", value="#67A2C5")
 
-    gap_size = st.number_input("Gap size", value=50)
-    round_size = st.number_input("Round size", value=20)
-    rect_x_size = st.number_input("Cell x-size", value=1000,)
-    rect_y_size = st.number_input("Cell y-size", value=rect_x_size//2)
+    DEFAULT_TEST_COLOUR = st.color_picker("Select the colour for quiz days", 
+                                                key="4", value="#9BCEC1")
+    DEFAULT_QUIZ_COLOUR = st.color_picker("Select the colour for test days", 
+                                                key="5", value="#FFC349")
+    
+    gap_size = st.number_input("Gap size",          key="6", value=50)
+    round_size = st.number_input("Round size",      key="7", value=20)
+    rect_x_size = st.number_input("Cell x-size",    key="8", value=1000,)
+    rect_y_size = st.number_input("Cell y-size",    key="9", value=rect_x_size//2)
 
     if reset_button:
         del st.session_state["1"]
         del st.session_state["2"]
         del st.session_state["3"]
-        st.session_state["1"] = "#D3C7E6"
-        st.session_state["2"] = "#F1B598"
-        st.session_state["3"] = "#BEDAE3"
+        st.session_state["1"] = "#FFB6A6"
+        st.session_state["2"] = "#FFEBD3"
+        st.session_state["3"] = "#9BCEC1"
         st.rerun()
 
 settings = {
@@ -80,13 +106,15 @@ settings = {
     "stat_holiday_colour" : STAT_HOLIDAY_COLOUR.capitalize(),
     "school_holiday_colour" : SCHOOL_HOLIDAY_COLOUR.capitalize(),
     "default_day_colour" : DEFAULT_INSTR_DAY_COLOUR.capitalize(),
+    "default_quiz_colour" : DEFAULT_QUIZ_COLOUR.capitalize(),
+    "default_test_colour" : DEFAULT_TEST_COLOUR.capitalize(),
 }
 
 import matplotlib.pyplot as plt
 plt.rc('font', size=10)
 plt.rc('axes', titlesize=20)
 
-left_column, right_column  = st.columns(2, gap="medium")
+left_column, mid_column, right_column  = st.columns(3, gap="medium")
 
 with left_column:
 
@@ -94,7 +122,7 @@ with left_column:
 
 # sidebar content
 
-with right_column:
+with mid_column:
 
 # main content - columns
     col1, col2 = st.columns(2)
@@ -117,18 +145,16 @@ with right_column:
 
     start_date = st.date_input("Select the starting date for the term.", value="2026-09-07")
 
-# calendar generation
-def main():
     df = create_schedule(loaded_lessons, misc_days, settings, start_date=str(start_date))
 
+    st.markdown("Below is a table of your data.")
+    st.dataframe(df)
+
+# calendar generation
+def main():
     fig, ax = gen_calendar(df, config_settings=settings)
 
     st.pyplot(fig,use_container_width=False)
-
-    fig_x_size, fig_y_size = fig.get_size_inches()
-
-    st.write(f"{fig_x_size}, {fig_y_size}")
-
 
 if not loaded_lessons or not misc_days:
     pass
